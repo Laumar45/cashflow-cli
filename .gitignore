@@ -1,0 +1,12 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+cash
+
+# Test and local data
+test_data/
+.cashflow/
