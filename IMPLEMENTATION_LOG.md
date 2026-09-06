@@ -1,0 +1,23 @@
+# Implementation Log — CashFlow CLI
+
+**Brief version being implemented:** v1.0.0  
+**Code Detail Level:** Contracts Only (Brief specification) -> Full Implementation (Build mode)  
+
+## Phase Progress
+
+| Phase | Status | Started | Completed | Notes |
+|---|:---:|:---:|:---:|---|
+| 1 — Domain Core & In-Memory Ports | ✅ Done | 2026-09-06 | 2026-09-06 | Entidades puras, value objects, puertos y casos de uso verificados con tests unitarios (100% pass). |
+| 2 — File Storage Adapter (Event Log) | ⬜ Not started | | | Implementación de `entries/<ulid>.json`. |
+| 3 — Cobra CLI Commands & Rendering | ⬜ Not started | | | Subcomandos y formateo de terminal. |
+| 4 — Git Sync Adapter & Verification | ⬜ Not started | | | Integración con Git nativo. |
+
+## Deviations from the Brief
+
+| # | Phase | What the brief says | What was actually done | Resolution | Brief updated? |
+|---|:---:|---|---|---|:---:|
+| *(None)* | | | | | |
+
+## Session Notes
+- 2026-09-06: Inicialización del repositorio Git local y módulo Go `cashflow`.
+- 2026-09-06: Fase 1 completada. Todos los contratos del dominio puro (`Money`, `Transaction`, `NormalizeCategory`, `Summary`), puertos de entrada/salida y casos de uso implementados y verificados con pruebas unitarias (100% pass). Cero desviaciones respecto a BRIEF.md.
