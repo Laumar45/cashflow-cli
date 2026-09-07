@@ -133,3 +133,45 @@ func TestMultiDeviceConflictFreeSync(t *testing.T) {
 		t.Errorf("Device B expected 2 transactions, got %d", len(txsOnB))
 	}
 }
+
+func TestSyncUnbornLocalWithMasterRemote(t *testing.T) {
+	root := t.TempDir()
+	bareRemoteDir := filepath.Join(root, "remote.git")
+	deviceDir := filepath.Join(root, "device")
+	ctx := context.Background()
+
+	// 1. Remote repo with master branch
+	runGit(t, root, "init", "--bare", "--initial-branch=master", bareRemoteDir)
+
+	// Seed remote with a commit on master
+	seedDir := filepath.Join(root, "seed")
+	runGit(t, root, "init", "-b", "master", seedDir)
+	runGit(t, seedDir, "config", "user.name", "Seed")
+	runGit(t, seedDir, "config", "user.email", "seed@example.com")
+	runGit(t, seedDir, "remote", "add", "origin", bareRemoteDir)
+	_ = os.WriteFile(filepath.Join(seedDir, "test.txt"), []byte("initial"), 0644)
+	runGit(t, seedDir, "add", "test.txt")
+	runGit(t, seedDir, "commit", "-m", "initial commit on master")
+	runGit(t, seedDir, "push", "-u", "origin", "master")
+
+	// 2. Setup device with empty repo on master (0 commits locally)
+	repo, _ := storage.NewFileRepository(deviceDir)
+	_ = repo.Init()
+	runGit(t, deviceDir, "init", "-b", "master")
+	runGit(t, deviceDir, "config", "user.name", "Device")
+	runGit(t, deviceDir, "config", "user.email", "device@example.com")
+	runGit(t, deviceDir, "remote", "add", "origin", bareRemoteDir)
+
+	// 3. Sync without specifying branch should resolve master and pull successfully
+	svc := vcs.NewGitService(deviceDir, "origin", "")
+	svc.SetStepLogger(&bytes.Buffer{})
+	if err := svc.Sync(ctx); err != nil {
+		t.Fatalf("Sync on unborn branch failed: %v", err)
+	}
+
+	// Verify test.txt was pulled from remote master
+	if _, err := os.Stat(filepath.Join(deviceDir, "test.txt")); err != nil {
+		t.Fatalf("expected test.txt to be pulled, got err: %v", err)
+	}
+}
+

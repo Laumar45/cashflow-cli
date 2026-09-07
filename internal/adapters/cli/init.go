@@ -65,6 +65,10 @@ Con el flag --auto, detecta si ya existe o crea automáticamente un repositorio 
 				return fmt.Errorf("error al configurar repositorio remoto: %w", err)
 			}
 			fmt.Fprintf(out, "%s Repositorio remoto configurado: %s\n", green("✔"), remoteURL)
+
+			if pulledBranch := pullExistingRemote(repo.BaseDir()); pulledBranch != "" {
+				fmt.Fprintf(out, "%s Datos existentes sincronizados desde la rama remota '%s'.\n", green("✔"), pulledBranch)
+			}
 			return nil
 		}
 
@@ -125,10 +129,36 @@ Con el flag --auto, detecta si ya existe o crea automáticamente un repositorio 
 				return fmt.Errorf("error al vincular remoto origin: %w", err)
 			}
 			fmt.Fprintf(out, "%s Repositorio remoto vinculado: %s\n", green("✔"), remoteURL)
+
+			// 6. Pull existing transactions if remote has history
+			if pulledBranch := pullExistingRemote(repo.BaseDir()); pulledBranch != "" {
+				fmt.Fprintf(out, "%s Datos existentes sincronizados desde la rama remota '%s'.\n", green("✔"), pulledBranch)
+			}
 		}
 
 		return nil
 	},
+}
+
+func pullExistingRemote(dir string) string {
+	fetchCmd := exec.Command("git", "fetch", "origin")
+	fetchCmd.Dir = dir
+	if err := fetchCmd.Run(); err != nil {
+		return ""
+	}
+
+	for _, b := range []string{"main", "master"} {
+		verifyCmd := exec.Command("git", "rev-parse", "--verify", fmt.Sprintf("origin/%s", b))
+		verifyCmd.Dir = dir
+		if err := verifyCmd.Run(); err == nil {
+			pullCmd := exec.Command("git", "pull", "--rebase", "origin", b)
+			pullCmd.Dir = dir
+			if err := pullCmd.Run(); err == nil {
+				return b
+			}
+		}
+	}
+	return ""
 }
 
 func setGitRemoteOrigin(dir, url string) error {

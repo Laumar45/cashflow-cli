@@ -78,6 +78,30 @@ func (s *GitService) classifyGitError(stderr string, err error) error {
 // [1/3] git add entries/ -> git commit -m "sync"
 // [2/3] git pull --rebase
 // [3/3] git push
+func (s *GitService) resolveBranch(ctx context.Context) string {
+	if s.branch != "" {
+		return s.branch
+	}
+
+	// 1. Try symbolic-ref (works on unborn branches with 0 commits)
+	currentBranch, _, err := s.run(ctx, "symbolic-ref", "--short", "HEAD")
+	if err == nil && currentBranch != "" {
+		return currentBranch
+	}
+
+	// 2. Try rev-parse --abbrev-ref HEAD
+	currentBranch, _, err = s.run(ctx, "rev-parse", "--abbrev-ref", "HEAD")
+	if err == nil && currentBranch != "" && currentBranch != "HEAD" {
+		return currentBranch
+	}
+
+	return "main"
+}
+
+// Sync performs the 3-step synchronization cycle:
+// [1/3] git add entries/ -> git commit -m "sync"
+// [2/3] git pull --rebase
+// [3/3] git push
 func (s *GitService) Sync(ctx context.Context) error {
 	// Verify git repo exists
 	if _, _, err := s.run(ctx, "rev-parse", "--is-inside-work-tree"); err != nil {
@@ -89,16 +113,8 @@ func (s *GitService) Sync(ctx context.Context) error {
 		return domain.ErrNoRemoteConfigured
 	}
 
-	// Resolve current branch if not specified
-	branch := s.branch
-	if branch == "" {
-		currentBranch, _, err := s.run(ctx, "rev-parse", "--abbrev-ref", "HEAD")
-		if err != nil || currentBranch == "" || currentBranch == "HEAD" {
-			branch = "main"
-		} else {
-			branch = currentBranch
-		}
-	}
+	// Resolve current branch
+	branch := s.resolveBranch(ctx)
 
 	// Step 1: Stage and commit local entries
 	if s.stepLogger != nil {
@@ -127,11 +143,27 @@ func (s *GitService) Sync(ctx context.Context) error {
 	_, stderr, err = s.run(ctx, "pull", "--rebase", s.remote, branch)
 	if err != nil {
 		lowerErr := strings.ToLower(stderr)
-		// If remote repository is brand new and has no commits yet, git pull fails with "couldn't find remote ref".
-		// This is expected on initial sync, so we proceed directly to push.
-		if !strings.Contains(lowerErr, "couldn't find remote ref") {
+		if strings.Contains(lowerErr, "couldn't find remote ref") {
+			// If the branch wasn't found on remote, attempt alternate standard branch (master <-> main)
+			altBranch := "main"
+			if branch == "main" {
+				altBranch = "master"
+			}
+			_, altStderr, altErr := s.run(ctx, "pull", "--rebase", s.remote, altBranch)
+			if altErr == nil {
+				branch = altBranch
+			} else if !strings.Contains(strings.ToLower(altStderr), "couldn't find remote ref") {
+				return s.classifyGitError(stderr, err)
+			}
+		} else {
 			return s.classifyGitError(stderr, err)
 		}
+	}
+
+	// Verify whether we have any commits in the repository to push
+	if _, _, err := s.run(ctx, "rev-parse", "HEAD"); err != nil {
+		// Both local and remote have 0 commits; nothing to push yet.
+		return nil
 	}
 
 	// Step 3: Push to remote
