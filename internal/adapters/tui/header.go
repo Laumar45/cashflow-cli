@@ -1,12 +1,16 @@
 package tui
 
 import (
+	_ "embed"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
 )
+
+//go:embed assets/dollar-sign.txt
+var embeddedDollarLogo string
 
 var spanishMonths = map[time.Month]string{
 	time.January:   "ENERO",
@@ -35,6 +39,9 @@ func renderHeader(logo string, currentMonth time.Time, isCompact bool) string {
 	monthBox := StyleMonthSelector.Render(monthSelector)
 
 	cleanLogo := strings.TrimSpace(logo)
+	if cleanLogo == "" {
+		cleanLogo = strings.TrimSpace(embeddedDollarLogo)
+	}
 	if cleanLogo == "" {
 		cleanLogo = "  $$$   C A S H F L O W\n $   $  ---------------\n  $$$   T U I"
 	}
