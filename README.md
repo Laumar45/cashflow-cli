@@ -66,7 +66,16 @@ chmod +x update.sh
 ./update.sh
 ```
 
-This runs `git pull --rebase` and automatically recompiles and replaces the active binary.
+This runs `git pull --rebase --autostash` and automatically recompiles and replaces the active binary.
+
+### 🤖 AI Agent Instructions (Antigravity, Cursor, Copilot, Claude)
+
+When requested to **"trae los cambios y actualiza"** (or "pull changes and update"):
+1. Execute `.\update.ps1` (Windows PowerShell) or `./update.sh` (Linux / macOS / Termux) from the repository root.
+2. Verify that the active executable matches the installed path:
+   - On Windows: `Get-Command cash | Select-Object Name, Source` (should resolve to `%LOCALAPPDATA%\cashflow\bin\cash.exe`).
+   - If an old binary in `%USERPROFILE%\go\bin\cash.exe` is taking precedence due to `PATH` order, remove it (`Remove-Item C:\Users\<user>\go\bin\cash.exe`).
+3. Run `cash --help` or the requested command to confirm it works.
 
 ---
 
