@@ -54,6 +54,16 @@ else
     echo -e "${GREEN}✔ El directorio ya está en tu PATH.${NC}"
 fi
 
+# 4. Verify which binary takes precedence
+ACTIVE_BIN="$(command -v cash 2>/dev/null || true)"
+if [ -n "$ACTIVE_BIN" ] && [ "$ACTIVE_BIN" != "$TARGET_DIR/cash" ]; then
+    echo ""
+    echo -e "${RED}⚠️  ADVERTENCIA: Existe otro binario 'cash' con mayor prioridad en tu PATH:${NC}"
+    echo -e "${YELLOW}   Ruta activa: $ACTIVE_BIN${NC}"
+    echo -e "${YELLOW}   Ruta recién instalada: $TARGET_DIR/cash${NC}"
+    echo -e "${RED}   Elimina el binario antiguo para evitar ejecutar una versión obsoleta.${NC}"
+fi
+
 echo ""
 echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}  ✔ Instalación completada con éxito!${NC}"

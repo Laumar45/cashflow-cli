@@ -58,6 +58,16 @@ if ($env:PATH -notmatch [regex]::Escape($installDir)) {
     $env:PATH = "$env:PATH;$installDir"
 }
 
+# 4. Verify which binary takes precedence
+$resolvedCmd = Get-Command cash.exe -ErrorAction SilentlyContinue
+if ($resolvedCmd -and ($resolvedCmd.Source -ne $targetExe)) {
+    Write-Host ""
+    Write-Host "⚠️  ADVERTENCIA: Existe otro binario 'cash.exe' con mayor prioridad en tu PATH:" -ForegroundColor Red
+    Write-Host "   Ruta activa: $($resolvedCmd.Source)" -ForegroundColor Yellow
+    Write-Host "   Ruta recién instalada: $targetExe" -ForegroundColor Yellow
+    Write-Host "   Elimina el binario antiguo para evitar ejecutar una versión obsoleta." -ForegroundColor Red
+}
+
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Green
 Write-Host "  ✔ Instalacion completada con exito!" -ForegroundColor Green

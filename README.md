@@ -51,6 +51,25 @@ go install ./cmd/cash
 
 ---
 
+## 🔄 Updating to Latest Version
+
+When pulling changes made from another machine or updating your local checkout, run the automated updater from the repository root:
+
+**Windows (PowerShell):**
+```powershell
+.\update.ps1
+```
+
+**Linux / macOS / Termux (Bash):**
+```bash
+chmod +x update.sh
+./update.sh
+```
+
+This runs `git pull --rebase` and automatically recompiles and replaces the active binary.
+
+---
+
 ## 📖 Quickstart & Usage
 
 ### 1. Initialize CashFlow
