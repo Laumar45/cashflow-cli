@@ -1,26 +1,37 @@
-# Design Brief: CashFlow CLI
+# Design Brief: CashFlow CLI — v1.1.0 Evolution (TUI Dashboard)
 
 ## 1. Header Block
-- **Version:** 1.0.0
-- **Date:** 2026-09-04
+- **Version:** 1.1.0
+- **Date:** 2026-09-07
 - **Status:** Ready for Implementation
-- **Stack Summary:** Go 1.22+, Cobra CLI, Immutable JSON Event Files, Git VCS Adapter
-- **Build Mode:** Greenfield v1.0 (Clean Hexagonal Architecture)
+- **Stack Summary:** Go 1.22+, Cobra CLI, Bubble Tea, Lip Gloss, Bubbles, Immutable JSON Event Files, Git VCS Adapter
+- **Build Mode:** Evolution v1.1.0 (Hexagonal Architecture Extension)
+- **Supersedes:** Design Brief v1.0.0 (2026-09-04)
 
 ---
 
 ## 2. Summary & Guiding Principle
-**CashFlow CLI** es una herramienta de registro y seguimiento de finanzas personales ultrarrápida, diseñada para desarrolladores y usuarios avanzados de terminal. Opera bajo un modelo *offline-first* estricto donde el almacenamiento local se estructura como un log de eventos inmutables en archivos individuales, sincronizados entre múltiples dispositivos (Laptop, PC, Termux en Android) mediante un repositorio privado de Git como backend distribuido a costo cero.
+**CashFlow CLI** es una herramienta de finanzas personales ultrarrápida y *offline-first* para desarrolladores y usuarios de terminal. En su versión 1.0 consolidó el registro atómico de ingresos y gastos en archivos inmutables (`~/.cashflow/entries/<ulid>.json`) y la sincronización distribuida con Git sin conflictos.
 
-Reemplaza hojas de cálculo manuales y aplicaciones móviles de finanzas sobrecargadas con interfaces lentas y sincronización centralizada propietaria.
+La **versión 1.1** incorpora un dashboard interactivo de terminal de **solo lectura** ejecutado mediante el subcomando `cash tui`. Permite auditar el estado financiero mensual, navegar entre meses y examinar transacciones en una interfaz responsiva y accesible, preservando intacta la captura rápida en línea de comandos.
 
 **Guiding Principle:**  
-> **"Captura en terminal en milisegundos, almacenamiento distribuido de eventos inmutables: cero fricción, cero costo y cero conflictos en Git."**
+> **"Captura rápida en terminal en milisegundos; auditoría visual interactiva de solo lectura con `cash tui`. Cero fricción, cero costo y cero llamadas de red espurias."**
 
 ---
 
-## 3. Delta Matrix
-*(Omitido por Skip Rule: Aplica únicamente a briefs de evolución v2+).*
+## 3. Delta Matrix (v1.0 → v1.1)
+
+| Section | Change Type | v1.0 Baseline | v1.1 Evolution | Technical Rationale |
+|---|:---:|---|---|---|
+| **§4 Stack** | Modified | Cobra + Color + Stdlib | Se agregan `bubbletea`, `lipgloss` y `bubbles` | Ecosistema canónico en Go para interfaces de terminal declarativas basadas en arquitectura Elm. |
+| **§6 Surface** | Modified | 7 comandos de línea de texto | Se agrega subcomando `cash tui` (aliases: `dashboard`, `ui`) | Punto de entrada aislado que preserva la ayuda nativa de Cobra en el comando raíz `cash`. |
+| **§8 Interactions** | Modified | Mapeo interactivo texto CLI | Se añade matriz de atajos de teclado (`h/l`, `j/k`, `t`, `q`) | Navegación de teclado intuitiva sin dependencia de eventos del ratón. |
+| **§9 Out of Scope** | Modified | Excluía TUI por completo | Permite TUI de solo lectura; excluye formularios internos, edición y sparklines | Protege la velocidad de captura en CLI y evita sobrecargar la interfaz con gráficos de baja legibilidad. |
+| **§10 Decisions** | Modified | DEC-001 a DEC-006 | Se incorporan DEC-TUI-01 a DEC-TUI-08 | Formaliza glifos accesibles `▲`/`▼`, breakpoint de 80 columnas y lectura de estado de Git 100% local. |
+| **§11 Structure** | Modified | Adapters storage, cli, vcs | Se añade `internal/adapters/tui/` | Adaptador primario nuevo; desacoplado de la lógica de negocio gracias a los puertos existentes. |
+| **§12 Roadmap** | Modified | Fases 1 a 4 (Completadas) | Se agrega **Fase 5: TUI Dashboard Adapter** | Extensión modular con entregables y criterios de cierre "Done when" verificables. |
+| **§13 Criteria** | Modified | AC-01 a AC-04 | Se agregan AC-05 a AC-08 (TUI) | Criterios verificables de renderizado, responsividad, accesibilidad y navegación. |
 
 ---
 
@@ -29,324 +40,279 @@ Reemplaza hojas de cálculo manuales y aplicaciones móviles de finanzas sobreca
 ### 4.1. Stack Table
 | Component | Technology | Version | Architectural Justification |
 |---|---|---|---|
-| **Core Runtime** | Go | 1.22+ | Compilación nativa a un solo binario estático, arranque en <10ms, consumo ínfimo de memoria y portabilidad directa en Windows, Linux y Termux (Android). |
-| **CLI Framework** | `spf13/cobra` | v1.8+ | Estándar de la industria en Go para subcomandos (`in`, `out`, `sync`, `summary`), parsing robusto de flags, help contextual y autocompletado. |
-| **ID Generator** | `oklog/ulid` | v2.1+ | Identificadores únicos universales lexicográficamente ordenables por timestamp (128 bits). Garantiza orden cronológico natural al listar archivos sin leer su contenido. |
-| **Storage Engine** | Immutable JSON Files | RFC 8259 | Patrón Event Sourcing: un archivo por transacción (`~/.cashflow/entries/<ulid>.json`). Resuelve de raíz los conflictos de merge en Git. |
-| **VCS Sync** | Git CLI | 2.x+ | Reutiliza los comandos nativos de Git del sistema (`os/exec`) para commit, pull y push hacia repositorio privado sin dependencias de red en el runtime. |
-| **Terminal Output** | `fatih/color` + `text/tabwriter` | v1.16+ / Stdlib | Formato tabular limpio y resaltado ANSI de ingresos/gastos sin sobrecargar el binario. |
+| **Core Runtime** | Go | 1.22+ | Binario estático compilado, arranque sub-10ms, consumo ínfimo de memoria. |
+| **CLI Framework** | `spf13/cobra` | v1.8+ | Despacho de subcomandos y autocompletado estándar POSIX. |
+| **TUI Framework** | `charmbracelet/bubbletea` | v1.2+ | Framework declarativo basado en The Elm Architecture (`Model`, `Update`, `View`) para manejo determinista de eventos de terminal. |
+| **TUI Styling** | `charmbracelet/lipgloss` | v1.0+ | Definición de estilos modulares tipo CSS (bordes, márgenes, padding, colores y layout de cajas). |
+| **TUI Components** | `charmbracelet/bubbles` | v0.20+ | Componente de viewport para scroll vertical fluido de tablas de transacciones. |
+| **Storage & VCS** | Immutable JSON + Git CLI | RFC 8259 / Git 2.x+ | Persistencia atómica de eventos en `entries/<ulid>.json` y sync distribuido. |
 
 ### 4.2. Not in Stack
-- **SQLite / Motores SQL embebidos:** No son amigables para versionado distribuido directo en Git (archivos binarios sufren colisiones constantes).
-- **Un solo archivo `.jsonl`:** Descartado como storage primario para evitar colisiones de líneas en Git rebase.
-- **Librerías GUI / Web (React, Vue, Node):** Estrictamente fuera del alcance de la v1.0.
-- **Punto flotante (`float32`/`float64`) para dinero:** Prohibido por imprecisión acumulativa IEEE 754.
+- Librerías GUI de escritorio (Wails, Fyne) o servidores Web (React, Vue) para v1.1.
+- Motores de gráficos ASCII / Sparklines complejos basados en caracteres de bloque (` ▂▃▄▅▆▇█`).
+- Captura de eventos del ratón (Mouse tracking) dentro de la TUI.
 
 ### 4.3. Agent Constraints (Implementation Rules)
 - If it's not in this brief, it does not exist — do not add features, files, or dependencies "because it makes sense."
 - If something is ambiguous, do not guess — ask, or mark it as an open question / assumption per this brief's policies.
 - Do not add dependencies outside the Stack table without flagging it first.
 - Do not create files outside Project Structure without flagging it first.
-- Do not rename established identifiers (see Naming Dictionary) without flagging it first.
+- Do not modify domain entities (`internal/domain/`) or ports (`internal/ports/`) unless explicitly specified in this evolution brief.
 
 ---
 
-## 5. Visual Identity
-*(Omitido por Skip Rule: Proyecto backend/CLI sin interfaz gráfica).*
+## 5. Visual Identity & Tokens (TUI)
+
+### 5.1. Color & Style Tokens
+| Token | Lip Gloss Def | Uso Semántico |
+|---|---|---|
+| `Primary` | `lipgloss.Color("#7D56F4")` | Títulos, bordes activos y acentos del header |
+| `Success` | `lipgloss.Color("#04B575")` | Ingresos, balance neto positivo y glifo `▲` |
+| `Danger` | `lipgloss.Color("#FF4444")` | Gastos, balance neto negativo y glifo `▼` |
+| `Muted` | `lipgloss.Color("#626262")` | Bordes secundarios, separadores y footer |
+| `NeutralText` | `lipgloss.Color("#DDDDDD")` | Texto principal de datos y filas de tabla |
+| `Highlight` | `lipgloss.Color("#E5C07B")` | Categorías y glifos de selección |
+
+### 5.2. Regla de Accesibilidad Universal (DEC-TUI-05)
+Ningún estado financiero depende exclusivamente del color:
+- **Ingreso:** Verde + Glifo `▲` (ej. `▲ +USD 3000.00`).
+- **Gasto:** Rojo + Glifo `▼` (ej. `▼ -USD 15.50`).
+- **Balance Neto:** Verde + `▲` si `>= 0`; Rojo + `▼` si `< 0`.
 
 ---
 
 ## 6. API & CLI Surface & Contracts
 
-El binario ejecutable se compilará con el nombre `cash`.
+### 6.1. Subcomando `cash tui`
+- **Invocación:** `cash tui [flags]`
+- **Aliases:** `dashboard`, `ui`
+- **Flags:**
+  - `--dir PATH`: Directorio de almacenamiento personalizado (heredado de bandera global).
+  - `--month YYYY-MM`: Iniciar la TUI posicionado en un mes específico (por defecto: mes actual).
 
-### 6.1. Command Specification Table
-| Command | Arguments | Flags | Stdout Contract | Stderr / Failure | Exit Code |
-|---|---|---|---|---|---|
-| `cash in` | `<category> <amount> [desc]` | `--date DD-MM-YYYY` | `✔ Ingreso registrado: +$3000.00 en 'sueldo' [ID: 01H...]` (en verde) | Error si amount <= 0 o categoría inválida | `0` éxito, `1` error |
-| `cash out` | `<category> <amount> [desc]` | `--date DD-MM-YYYY` | `✔ Gasto registrado: -$15.50 en 'almuerzo' [ID: 01H...]` (en rojo) | Error si amount <= 0 o categoría inválida | `0` éxito, `1` error |
-| `cash summary` | *(Ninguno)* | `--month MM-YYYY`, `--currency SYM` | Tarjeta con: Total Ingresos, Total Gastos, Balance Neto y Top categorías. | Error si formato de mes es inválido | `0` éxito, `1` error |
-| `cash list` | *(Ninguno)* | `--month MM-YYYY`, `--category CAT`, `--limit N`, `--json` | Tabla ASCII con columnas: Fecha, ID, Tipo, Categoría, Monto, Descripción. Si `--json`, array JSON plano. | Error si parámetros son inválidos | `0` éxito, `1` error |
-| `cash categories`| *(Ninguno)* | `--type in\|out` | Lista ordenada alfabéticamente de categorías únicas con conteo de transacciones y total acumulado. | Ninguno | `0` éxito |
-| `cash sync` | *(Ninguno)* | `--remote NAME`, `--branch NAME` | Progreso paso a paso: `[1/3] Commit local... [2/3] Pull rebase... [3/3] Push... Sincronización exitosa.` | Advertencia si falla conexión; transacciones locales se preservan intactas. | `0` éxito, `2` error git |
-| `cash init` | `[git-repo-url]` | *(Ninguno)* | Crea `~/.cashflow/entries` y configura el repositorio Git local/remoto. | Error si ruta no tiene permisos de escritura | `0` éxito, `1` error |
+### 6.2. Wireframes de Layout y Breakpoints
+
+#### Layout Estándar (Ancho de Terminal ≥ 80 columnas)
+```
++-----------------------------------------------------------------------+
+|  $$$    C A S H F L O W   T U I                                       |
+|  $ $    <  SEPTIEMBRE 2026  >                                         |
++-----------------------------------------------------------------------+
+|  +---------------+  +---------------+  +---------------+  +---------+ |
+|  | INGRESOS   ▲  |  | GASTOS     ▼  |  | BALANCE    ▲  |  | TOP CAT.| |
+|  | +USD 3000.00  |  | -USD 600.00   |  | +USD 2400.00  |  | sueldo  | |
+|  +---------------+  +---------------+  +---------------+  +---------+ |
++-----------------------------------------------------------------------+
+|  FECHA       | TIPO       | CATEGORÍA      | MONTO      | DESCRIPCIÓN |
+|  ------------+------------+----------------+------------+-----------  |
+|  2026-09-06  | ▲ INCOME   | sueldo         | +$3,000.00 | Quincena    |
+|  2026-09-05  | ▼ EXPENSE  | almuerzo       | -$15.50    | Menu del dia|
+|  2026-09-04  | ▼ EXPENSE  | transporte     | -$4.50     | Metro       |
++-----------------------------------------------------------------------+
+|  Fila 3/47  •  Última sync: hace 2h  •  Cambios sin sync: 0           |
+|  [←/→ h/l] Mes  •  [↑/↓ j/k] Navegar  •  [t] Hoy  •  [q] Salir        |
++-----------------------------------------------------------------------+
+```
+
+#### Layout Compacto (Ancho de Terminal < 80 columnas — Termux / Móvil)
+```
++---------------------------------+
+| $$$ CASHFLOW TUI                |
+| < SEPTIEMBRE 2026 >             |
++---------------------------------+
+| INGRESOS ▲     +USD 3,000.00    |
+| GASTOS   ▼       -USD 600.00    |
+| BALANCE  ▲     +USD 2,400.00    |
+| TOP CAT.          sueldo        |
++---------------------------------+
+| FECHA      TIPO     MONTO       |
+| ---------  --------  ---------  |
+| 09-06      ▲ INCOME  +3,000.00  |
+| 09-05      ▼ EXPENSE   -15.50   |
++---------------------------------+
+| Fila 2/47  •  ↻ 2h              |
+| [h/l] Mes [j/k] Nav [q] Salir   |
++---------------------------------+
+```
 
 ---
 
 ## 7. Data Model & Behavior
 
-**Code Detail Level:** Contracts Only (Go interfaces, structs, pre/post-conditions).
+**Code Detail Level:** Contracts Only (Interfaces y structs de TUI).
 
-### 7.1. Domain Entities & Value Objects
+### 7.1. Reutilización de Puertos Existentes
+La TUI no altera el dominio. Consume exclusivamente `ports.TransactionUseCases`:
+- `GetMonthlySummary(ctx, year, month)`: Provee ingresos, gastos, balance neto y `ExpenseByCategory` (utilizado para derivar Top Categoría).
+- `ListTransactions(ctx, filter)`: Provee las transacciones del mes ordenadas cronológicamente para la tabla.
 
-```go
-package domain
-
-import (
-	"fmt"
-	"regexp"
-	"strings"
-	"time"
-)
-
-type TransactionType string
-
-const (
-	TypeIncome  TransactionType = "income"
-	TypeExpense TransactionType = "expense"
-)
-
-// Money representa una cantidad monetaria exacta en centavos para evitar floating-point drift.
-type Money struct {
-	Cents    int64  `json:"cents"`
-	Currency string `json:"currency"` // Default: "USD"
-}
-
-func NewMoney(amount float64, currency string) (Money, error) {
-	if amount <= 0 {
-		return Money{}, fmt.Errorf("amount must be greater than zero")
-	}
-	cents := int64(amount*100 + 0.5)
-	if currency == "" {
-		currency = "USD"
-	}
-	return Money{Cents: cents, Currency: currency}, nil
-}
-
-func (m Money) Format() string {
-	return fmt.Sprintf("%s %.2f", m.Currency, float64(m.Cents)/100.0)
-}
-
-// Transaction representa el evento inmutable de una operación financiera.
-type Transaction struct {
-	ID          string          `json:"id"`          // ULID de 26 caracteres
-	Timestamp   time.Time       `json:"timestamp"`   // UTC ISO 8601
-	Type        TransactionType `json:"type"`        // "income" | "expense"
-	Category    string          `json:"category"`    // Slug normalizado: [a-z0-9-_]+
-	Amount      Money           `json:"amount"`      // Objeto de valor
-	Description string          `json:"description"` // Opcional
-}
-
-var categoryRegex = regexp.MustCompile(`^[a-z0-9-_]+$`)
-
-func NormalizeCategory(raw string) (string, error) {
-	slug := strings.ToLower(strings.TrimSpace(raw))
-	slug = strings.ReplaceAll(slug, " ", "-")
-	if !categoryRegex.MatchString(slug) {
-		return "", fmt.Errorf("invalid category format: %s", raw)
-	}
-	return slug, nil
-}
-```
-
-### 7.2. Hexagonal Ports (Interfaces)
+### 7.2. Contrato del Modelo de Presentación TUI
 
 ```go
-package ports
+package tui
 
 import (
-	"context"
+	tea "github.com/charmbracelet/bubbletea"
 	"cashflow/internal/domain"
+	"cashflow/internal/ports"
 	"time"
 )
 
-type TransactionFilter struct {
-	Month    *time.Time
-	Category string
-	Type     *domain.TransactionType
-	Limit    int
+// SyncStatusInfo provee métricas de solo lectura local del repositorio Git.
+type SyncStatusInfo struct {
+	LastSyncRelative string // ej: "hace 2h"
+	UnsyncedCount    int    // cantidad de archivos locales modificados sin commit/sync
 }
 
-// TransactionRepository define el puerto secundario (salida) para persistencia.
-type TransactionRepository interface {
-	// Save guarda una transacción como un archivo inmutable entries/<ID>.json.
-	// Precondition: tx.ID es un ULID válido y no vacío. tx.Amount.Cents > 0.
-	// Postcondition: Escribe el archivo en disco de forma atómica. Nunca sobrescribe un ID existente.
-	// Error: ErrStorageUnavailable, ErrDuplicateTransaction.
-	Save(ctx context.Context, tx domain.Transaction) error
-
-	// FindAll recupera todas las transacciones que satisfacen el filtro.
-	// Precondition: filter contiene criterios válidos o valores cero.
-	// Postcondition: Retorna slice ordenado por Timestamp DESC. Retorna slice vacío si no hay coincidencias.
-	// Error: ErrStorageUnavailable.
-	FindAll(ctx context.Context, filter TransactionFilter) ([]domain.Transaction, error)
-
-	// ListCategories extrae todas las categorías únicas utilizadas.
-	// Postcondition: Retorna slice ordenado alfabéticamente sin duplicados.
-	ListCategories(ctx context.Context) ([]string, error)
+// Model define el estado determinista de Bubble Tea para el dashboard.
+type Model struct {
+	usecases      ports.TransactionUseCases
+	currentMonth  time.Time
+	summary       *domain.MonthlySummary
+	transactions  []domain.Transaction
+	cursorIndex   int
+	width         int
+	height        int
+	isCompact     bool
+	syncInfo      SyncStatusInfo
+	err           error
 }
 
-// SyncService define el puerto secundario para interactuar con Git.
-type SyncService interface {
-	// Sync ejecuta el ciclo de sincronización distribuida.
-	// Precondition: Directorio de almacenamiento es un repositorio Git válido.
-	// Postcondition: Realiza git add -> git commit -> git pull --rebase -> git push.
-	// Error: ErrNoRemoteConfigured, ErrGitConflict, ErrNetworkUnavailable.
-	Sync(ctx context.Context) error
-}
-
-// TransactionUseCases define el puerto primario (entrada) para la CLI.
-type TransactionUseCases interface {
-	RecordIncome(ctx context.Context, category string, amount float64, desc string, date *time.Time) (*domain.Transaction, error)
-	RecordExpense(ctx context.Context, category string, amount float64, desc string, date *time.Time) (*domain.Transaction, error)
-	GetMonthlySummary(ctx context.Context, year int, month time.Month) (*domain.MonthlySummary, error)
-	ListTransactions(ctx context.Context, filter TransactionFilter) ([]domain.Transaction, error)
-	Synchronize(ctx context.Context) error
-}
+func NewModel(svc ports.TransactionUseCases, initialMonth time.Time, syncInfo SyncStatusInfo) Model
+func (m Model) Init() tea.Cmd
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd)
+func (m Model) View() string
 ```
 
 ---
 
-## 8. Interactions & Feedback & Error Taxonomy
+## 8. Interactions & Feedback
 
-### 8.1. Action -> Response Mapping
-| Action | Immediate Feedback | Final Result |
+### 8.1. Tabla de Atajos de Teclado
+| Tecla | Acción | Comportamiento en TUI |
 |---|---|---|
-| `cash in sueldo 3000` | Ninguno (latencia < 5ms) | `✔ Ingreso registrado: +USD 3000.00 en 'sueldo' [ID: 01H...]` |
-| `cash out café 3.5 "En la plaza"` | Normalización de slug `café` -> `cafe` | `✔ Gasto registrado: -USD 3.50 en 'cafe' [ID: 01H...]` |
-| `cash sync` | Print step-by-step: `[1/3] Guardando...` | `✔ Sincronización con Git completada con éxito.` |
+| `←` / `h` | Mes Anterior | Retrocede un mes en `currentMonth`, recalcula métricas y reinicia cursor en fila 0. |
+| `→` / `l` | Mes Siguiente | Avanza un mes en `currentMonth`, recalcula métricas y reinicia cursor en fila 0. |
+| `↑` / `k` | Fila Arriba | Desplaza cursor una fila arriba en la tabla de transacciones. |
+| `↓` / `j` | Fila Abajo | Desplaza cursor una fila abajo en la tabla de transacciones. |
+| `t` | Ir a Hoy | Resetea la fecha al mes y año actual (`time.Now()`). |
+| `q` / `Esc` / `Ctrl+C` | Salir | Emite `tea.Quit`, restaura terminal y finaliza proceso con exit code 0. |
 
-### 8.2. Error Taxonomy Table
-| Error Type | Trigger | CLI User Message | Technical Handling | Exit Code | Retryable? |
-|---|---|---|---|---|---|
-| `ErrInvalidAmount` | Monto <= 0 o caracteres no numéricos | `Error: El monto debe ser un número decimal positivo (ej: 15.50).` | Abortar ejecución, no tocar disco | `1` | No |
-| `ErrInvalidCategory` | Categoría contiene caracteres especiales no permitidos | `Error: Categoría inválida. Usa solo letras, números y guiones.` | Abortar ejecución | `1` | No |
-| `ErrStorageUninitialized`| `~/.cashflow/entries` no existe al intentar guardar/leer | `Error: Almacenamiento no inicializado. Ejecuta 'cash init' primero.` | Guía al usuario hacia `cash init` | `1` | Sí (auto-init) |
-| `ErrGitNetworkFailure` | Timeout de red o sin conexión durante `cash sync` | `Advertencia: Sin conexión al repositorio remoto. Tus datos están seguros en local.` | Exit gracefully, mantener transacciones locales | `2` | Sí |
-| `ErrGitAuthFailure` | Clave SSH o credencial rechazada por GitHub/GitLab | `Error: Falla de autenticación en Git. Verifica tus credenciales SSH/HTTPS.` | Mostrar stderr de Git sin exponer tokens | `2` | No |
-| `ErrCorruptFile` | Un archivo en `entries/` no es JSON válido | `Advertencia: Se omitió archivo corrupto: <path>` | Ignorar archivo, advertir en stderr, continuar parseando el resto | `0` | No |
+### 8.2. Estados Vacíos y de Error
+- **Mes sin transacciones:** Muestra mensaje centrado en tabla: `"No hay transacciones registradas para este mes."` con tarjetas en `$0.00`.
+- **Terminal en dimensiones extremas (ancho < 30 o alto < 10):** Muestra vista mínima: `"Terminal demasiado pequeña para renderizar CashFlow TUI."`
 
 ---
 
-## 9. Out of Scope (v1.0)
+## 9. Out of Scope (v1.1)
 
-1. **Web Dashboard / GUI:** Cualquier interfaz web, gráfica o servidor HTTP queda formalmente diferido para la versión 2.0. La v1.0 es exclusivamente CLI de terminal.
-2. **Conversión automática de divisas (FX Rates):** La v1.0 almacena transacciones con una moneda base configurada por el usuario (default `USD`). No hace llamadas a APIs de tasas de cambio.
-3. **Interfaz TUI interactiva (Ncurses/Bubbletea):** La v1.0 opera por comandos y argumentos directos sin interfaces a pantalla completa.
-4. **Modificación o eliminación destructiva in situ:** Por ser un modelo de eventos inmutables, la v1.0 no implementa `cash edit` ni `cash delete`. Las correcciones se registran mediante transacciones compensatorias.
-5. **Presupuestos y metas de ahorro automáticas:** Reglas de alerta de límites presupuestarios no forman parte del MVP.
+1. **Formularios de captura/edición dentro de la TUI:** El registro permanece como responsabilidad de `cash in` y `cash out` en terminal.
+2. **Gráficos Sparkline o caracteres de bloque:** No se incorporan gráficos de barras dentro de la terminal en v1.1.
+3. **Eventos de mouse:** Interacción 100% controlada por teclado.
+4. **Operaciones de red automáticas en segundo plano:** El indicador de sync en footer lee únicamente el estado local sin disparar `git fetch`, `pull` ni `push`.
+5. **Filtrado dinámico interactivo en TUI:** Búsquedas por texto o categoría dentro de la TUI quedan reservadas para v1.2.
 
 ---
 
 ## 10. Closed Decisions Registry
 
-1. **DEC-001: Arquitectura Hexagonal (Ports & Adapters)**  
-   *Justificación:* Aísla las reglas de negocio de finanzas (`Transaction`, `Money`, `Summary`) del sistema de archivos y del comando Git. Permite probar el 100% de la lógica con un repositorio en memoria en microsegundos.
-2. **DEC-002: Go 1.22+ como Lenguaje Único**  
-   *Justificación:* Compilación en un único binario sin dependencias externas, velocidad de arranque inigualable (<10ms) esencial para UX de terminal, y soporte nativo en Termux (Android).
-3. **DEC-003: Almacenamiento de Eventos Inmutables (Archivo por Transacción)**  
-   *Justificación:* Soluciona la falacia del auto-merge en `.jsonl`. En Git, agregar archivos independientes con nombres únicos basados en ULID jamás produce conflictos de merge al sincronizar entre dispositivos desconectados.
-4. **DEC-004: ULID como Identificador Universal**  
-   *Justificación:* Combina 48 bits de timestamp y 80 bits de entropía aleatoria. Proporciona orden cronológico por defecto en el sistema de archivos sin necesidad de abrir ni indexar los JSON.
-5. **DEC-005: Aritmética de Dinero en Centavos Enteros (`int64`)**  
-   *Justificación:* Elimina los errores de redondeo de punto flotante binario (IEEE 754) en operaciones financieras.
-6. **DEC-006: Política de Idiomas**  
-   *Justificación:* Código fuente, interfaces, nombres de campos JSON, comandos y flags en **inglés**. Mensajes de cara al usuario en terminal y nombres de categorías del dominio en **español** (con soporte neutro).
+### Inherited Decisions (Active from v1.0)
+- **DEC-001 (Active):** Arquitectura Hexagonal (Ports & Adapters).
+- **DEC-002 (Active):** Go 1.22+ como lenguaje único.
+- **DEC-003 (Active):** Storage en archivos de eventos inmutables (`entries/<ulid>.json`).
+- **DEC-004 (Active):** ULID como identificador de 26 caracteres.
+- **DEC-005 (Active):** Aritmética de dinero en centavos enteros (`int64`).
+- **DEC-006 (Active):** Código en inglés, interfaz de usuario en español.
+
+### New Decisions (v1.1 Evolution)
+1. **DEC-TUI-01:** Subcomando `cash tui` con aliases `dashboard` y `ui` (sin sobrecargar `cash` base).
+2. **DEC-TUI-02:** Modo estricto de **solo lectura**. Cero formularios emergentes para preservar la pureza y rapidez de captura del CLI.
+3. **DEC-TUI-03:** Navegación mensual dinámica reactiva con flechas y teclas Vim (`h`/`l`).
+4. **DEC-TUI-04:** Stack Bubble Tea + Lip Gloss como estándar declarativo en Go.
+5. **DEC-TUI-05:** Accesibilidad daltónica obligatoria mediante glifos redundantes `▲`/`▼` junto a todo color financiero.
+6. **DEC-TUI-06:** Breakpoint responsivo a 80 columnas alternando entre layout estándar y compacto (Termux/móvil).
+7. **DEC-TUI-07:** Estado de sync en footer de **solo lectura local** (conteo de cambios locales y timestamp relativo) sin operaciones de red.
+8. **DEC-TUI-08:** Tarjeta de "Top Categoría" reutiliza los agregados ya provistos por `GetMonthlySummary` sin alterar el dominio.
 
 ### Supuestos a confirmar
-- `~/.cashflow` como ruta base en todos los OS (resuelto mediante `os.UserHomeDir()`).
-- Moneda por defecto `USD` si el usuario no especifica configuración.
+- Logo ASCII: Si `dollar-sign.md` está vacío, se utiliza el logo tipográfico estilizado por defecto.
+- Formato relativo humano para última sincronización (`hace 2h`, `ayer`, `hace 5m`).
 
 ---
 
 ## 11. Project Structure & Naming Dictionary
 
-### 11.1. Directory Tree
+### 11.1. Directory Tree (Evolution)
 ```
 cashflow-cli/
 ├── cmd/
 │   └── cash/
-│       └── main.go                  # Bootstrap: inyección de dependencias y ejecución de root command
+│       └── main.go
 ├── internal/
-│   ├── domain/                      # Núcleo puro (sin dependencias externas)
-│   │   ├── transaction.go           # Entidad Transaction y enum TransactionType
-│   │   ├── money.go                 # Value Object Money y aritmética de centavos
-│   │   ├── summary.go               # Agregados y estadísticas mensuales
-│   │   └── errors.go                # Errores centinela de dominio
-│   ├── ports/                       # Interfaces de entrada y salida
-│   │   ├── repository.go            # Puerto secundario de persistencia
-│   │   ├── sync.go                  # Puerto secundario de sincronización Git
-│   │   └── usecases.go              # Puerto primario de la aplicación
-│   ├── usecases/                    # Orquestación de lógica de negocio
-│   │   ├── record_transaction.go    # Casos de uso de ingreso y gasto
-│   │   ├── get_summary.go           # Cálculo de balances y sumatorias
-│   │   ├── list_transactions.go     # Filtros y ordenamiento
-│   │   └── sync_data.go             # Orquestación de sincronización
-│   └── adapters/                    # Adaptadores de infraestructura
-│       ├── storage/
-│       │   └── file_repository.go   # Implementación JSON en entries/<ulid>.json
-│       ├── vcs/
-│       │   └── git_service.go       # Adaptador de comandos Git nativos
-│       └── cli/                     # Adaptador primario (Cobra CLI)
-│           ├── root.go              # Comando base y configuración global
-│           ├── in.go                # Subcomando 'cash in'
-│           ├── out.go               # Subcomando 'cash out'
-│           ├── summary.go           # Subcomando 'cash summary'
-│           ├── list.go              # Subcomando 'cash list'
-│           ├── categories.go        # Subcomando 'cash categories'
-│           ├── sync.go              # Subcomando 'cash sync'
-│           └── init.go              # Subcomando 'cash init'
+│   ├── domain/                  # Intacto (v1.0)
+│   ├── ports/                   # Intacto (v1.0)
+│   ├── usecases/                # Intacto (v1.0)
+│   └── adapters/
+│       ├── storage/             # Intacto (v1.0)
+│       ├── vcs/                 # Intacto (v1.0)
+│       ├── cli/                 # Subcomandos existentes + registro de 'cash tui'
+│       │   └── tui_cmd.go       # [NUEVO] Subcomando 'cash tui'
+│       └── tui/                 # [NUEVO] Adaptador de interfaz de terminal
+│           ├── model.go         # Modelo de Bubble Tea, Init, Update y View
+│           ├── styles.go        # Definición de tokens Lip Gloss y layouts
+│           ├── header.go        # Renderizado de logo ASCII y selector de mes
+│           ├── cards.go         # Renderizado de tarjetas estándar y compactas
+│           ├── table.go         # Renderizado y scroll de tabla de transacciones
+│           ├── sync_status.go   # Extractor de métricas locales de Git para footer
+│           └── tui_test.go      # Pruebas unitarias de renderizado y transiciones de estado
 ├── go.mod
 ├── go.sum
-└── README.md
+├── dollar-sign.md
+├── BRIEF.md                     # Este documento actualizado a v1.1.0
+└── IMPLEMENTATION_LOG.md
 ```
 
 ### 11.2. Naming Dictionary
 | Concepto | Término Canónico | Utilizado en | No confundir con |
 |---|---|---|---|
-| Registro inmutable individual | `Transaction` | Domain, Ports, Storage | `Entry` (nombre de la carpeta de almacenamiento) |
-| Cantidad monetaria exacta | `Money` (`Cents int64`) | Domain, Value Object | `Amount` (float64 usado solo en parsing de CLI) |
-| Puerto de almacenamiento | `TransactionRepository` | Ports, Adapters | `GitService` (puerto de transporte/sync) |
+| Adaptador de interfaz TUI | `tui.Model` | `internal/adapters/tui/` | `cli.tuiCmd` (comando de arranque) |
+| Métricas de sincronización | `SyncStatusInfo` | `internal/adapters/tui/` | `ports.SyncService` (ejecutor de sync) |
+| Vista compacta | `isCompact` (< 80 col) | `tui.styles` | `viewport` (componente de scroll) |
 
 ---
 
 ## 12. Implementation Roadmap
 
-### Phase 1 — Domain Core & In-Memory Ports
-**Deliverables:** `internal/domain/*.go`, `internal/ports/*.go`, `internal/usecases/*.go`, `internal/domain/*_test.go`  
-**Done when ALL of:**
-- [ ] `Money` previene montos <= 0 y convierte floats a centavos enteros con precisión exacta.
-- [ ] `NormalizeCategory` sanitiza espacios y mayúsculas (`"Comida Rápida"` -> `"comida-rapida"`).
-- [ ] Pruebas unitarias de casos de uso ejecutadas contra un mock en memoria pasan con 100% de éxito.
+### Phase 5 — TUI Dashboard Adapter (Bubble Tea & Lip Gloss)
+**Deliverables:**
+- `internal/adapters/tui/*.go` (model, styles, header, cards, table, sync_status)
+- `internal/adapters/cli/tui_cmd.go`
+- `internal/adapters/tui/tui_test.go`
 
-### Phase 2 — File Storage Adapter (Event Log)
-**Deliverables:** `internal/adapters/storage/file_repository.go`, `file_repository_test.go`  
 **Done when ALL of:**
-- [ ] Cada llamada a `Save()` crea un archivo único `~/.cashflow/entries/<ulid>.json`.
-- [ ] `FindAll()` lee el directorio, parsea los archivos JSON y retorna los registros ordenados por timestamp descendente.
-- [ ] La presencia de un archivo con JSON inválido emite una advertencia pero no aborta el parseo de los demás archivos.
-
-### Phase 3 — Cobra CLI Commands & Rendering
-**Deliverables:** `internal/adapters/cli/*.go`, `cmd/cash/main.go`  
-**Done when ALL of:**
-- [ ] Comandos `cash in` y `cash out` registran transacciones en disco en menos de 10ms.
-- [ ] `cash summary` imprime resumen formateado con balance neto calculado correctamente.
-- [ ] `cash list --json` emite un array JSON válido sin decoraciones ANSI para interoperabilidad.
-
-### Phase 4 — Git Sync Adapter & Verification
-**Deliverables:** `internal/adapters/vcs/git_service.go`, `cash sync`, `cash init`  
-**Done when ALL of:**
-- [ ] `cash init` inicializa el directorio local y el repositorio Git si no existen.
-- [ ] `cash sync` ejecuta `git add entries/`, `git commit`, `git pull --rebase` y `git push`.
-- [ ] Si no hay conexión a internet, `cash sync` falla con código de salida `2`, informando que los datos locales están a salvo.
+- [ ] `cash tui` renderiza el logo, selector de mes, tarjetas de métricas con `▲`/`▼` y la tabla de transacciones.
+- [ ] Al presionar `←`/`→` (o `h`/`l`), el modelo actualiza el mes y recalcula las métricas en pantalla al instante.
+- [ ] Al redimensionar la ventana por debajo de 80 columnas (`tea.WindowSizeMsg`), el layout colapsa a modo compacto apilado sin desbordamiento.
+- [ ] Al presionar `q`, la aplicación finaliza limpiamente con exit code 0.
+- [ ] La suite completa `go test ./...` pasa con 100% de éxito.
 
 ---
 
-## 13. Acceptance Criteria & Test Plan
+## 13. Acceptance Criteria & Test Plan (Evolution)
 
-1. **AC-01 (Registro Rápido):** Al ejecutar `cash out almuerzo 12.50 "Menu ejecutivo"`, se crea un archivo en `entries/` con `amount_cents: 1250`, `type: "expense"`, y la CLI retorna exit code 0 en <100ms.
-2. **AC-02 (Cálculo Financiero):** Para 2 ingresos de $1000 y 3 gastos de $200, `cash summary` reporta exactamente: Ingresos: $2000.00, Gastos: $600.00, Balance: +$1400.00.
-3. **AC-03 (Sincronización Concurrente):** Si el Dispositivo A crea una transacción desconectado y el Dispositivo B crea otra desconectado, al ejecutar `cash sync` en ambos, ambos repositorios contienen ambas transacciones sin intervención manual ni conflicto de Git.
-4. **AC-04 (Manejo de Errores):** Ejecutar `cash in comida -50` debe mostrar `Error: El monto debe ser un número decimal positivo` y finalizar con exit code 1 sin crear archivos.
+1. **AC-05 (Renderizado de Dashboard):** Al ejecutar `cash tui`, se inicializa la vista a pantalla completa con las tarjetas de Ingresos, Gastos y Balance Neto correspondientes al mes actual y la tabla de movimientos ordenada cronológicamente.
+2. **AC-06 (Accesibilidad Simbólica):** Todos los valores de ingreso llevan el símbolo `▲` y color verde; todos los gastos llevan `▼` y color rojo; el balance neto cambia dinámicamente entre `▲` verde y `▼` rojo según su valor.
+3. **AC-07 (Responsividad <80 Columnas):** Con un mensaje de ventana con `width < 80`, la TUI oculta la columna Descripción, apila verticalmente las tarjetas de métricas y muestra el indicador compacto de sincronización sin deformar los bordes.
+4. **AC-08 (Navegación Temporal Fluida):** Enviar evento de tecla `←` cambia el mes visualizado a `time.Month - 1` y actualiza las filas de la tabla con los datos de dicho mes en <15ms.
 
 ---
 
 ## 14. Open Questions
-*Ninguna pregunta abierta pendiente.* Todos los supuestos iniciales fueron resueltos en las decisiones cerradas (Go como lenguaje, archivo por transacción como modelo de almacenamiento, y exclusión estricta de la web para v1.0).
+*Ninguna pregunta abierta bloqueante.* El comportamiento de las dimensiones reducidas, los atajos de teclado y la reutilización de puertos existentes quedaron formalizados.
 
 ---
 
 ## 15. Glossary
-- **ULID (Universally Unique Lexicographically Sortable Identifier):** Identificador de 26 caracteres compatible con UUID pero ordenable por tiempo.
-- **Event Sourcing / Event Log:** Patrón de persistencia donde cada cambio de estado es un evento inmutable añadido secuencialmente en lugar de sobreescribir un registro previo.
-- **Hexagonal Architecture:** Patrón arquitectónico que aísla la lógica central de negocio del mundo exterior mediante puertos (interfaces) y adaptadores (implementaciones concretas).
+- **The Elm Architecture (TEA):** Patrón de diseño para interfaces de usuario reactivas estructuradas en tres componentes puros: Modelo (Estado), Actualización (Update/Mensajes) y Vista (View declarativa).
+- **Lip Gloss:** Librería declarativa para estilizado de componentes de terminal mediante composición de bordes, alineación, márgenes y colores ANSI de 24 bits.
+- **Bubble Tea:** Framework para aplicaciones interactivas de terminal basado en TEA.
