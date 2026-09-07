@@ -5,7 +5,7 @@
 *.so
 *.dylib
 bin/
-cash
+/cash
 
 # Test and local data
 test_data/
