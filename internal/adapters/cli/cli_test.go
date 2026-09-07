@@ -100,3 +100,18 @@ func TestPhase3CLICapabilities(t *testing.T) {
 		t.Errorf("missing categories in output: %s", catOut)
 	}
 }
+
+func TestRootCmdHelpExamples(t *testing.T) {
+	out, err := executeCommand()
+	if err != nil {
+		t.Fatalf("expected root command without arguments to succeed, got error: %v", err)
+	}
+
+	if !strings.Contains(out, "Examples:") {
+		t.Errorf("expected help output to contain 'Examples:', got:\n%s", out)
+	}
+
+	if !strings.Contains(out, "cash in") || !strings.Contains(out, "cash out") {
+		t.Errorf("expected examples to show 'cash in' and 'cash out', got:\n%s", out)
+	}
+}

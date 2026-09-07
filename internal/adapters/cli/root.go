@@ -24,6 +24,24 @@ var RootCmd = &cobra.Command{
 	Short: "CashFlow CLI — Fast offline-first personal finance tracker",
 	Long: `CashFlow CLI is an ultra-fast, offline-first personal finance tracker.
 It stores transactions as immutable event files and synchronizes via Git with zero merge conflicts.`,
+	Example: `  # Registrar un nuevo ingreso o gasto:
+  cash in salario 2500 "Pago de nómina"
+  cash out comida 15.50 "Almuerzo de trabajo"
+
+  # Consultar resumen mensual y balance:
+  cash summary
+  cash summary --month 2026-09
+
+  # Listar transacciones o ver categorías:
+  cash list
+  cash list --json
+  cash categories
+
+  # Iniciar dashboard interactivo (TUI):
+  cash tui
+
+  # Sincronizar transacciones con repositorio remoto:
+  cash sync`,
 	SilenceUsage:  true,
 	SilenceErrors: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
