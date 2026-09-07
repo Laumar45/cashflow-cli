@@ -24,7 +24,10 @@ var RootCmd = &cobra.Command{
 	Short: "CashFlow CLI — Fast offline-first personal finance tracker",
 	Long: `CashFlow CLI is an ultra-fast, offline-first personal finance tracker.
 It stores transactions as immutable event files and synchronizes via Git with zero merge conflicts.`,
-	Example: `  # Registrar un nuevo ingreso o gasto:
+	Example: `  # Inicializar y configurar sincronización automática con GitHub:
+  cash init --auto
+
+  # Registrar un nuevo ingreso o gasto:
   cash in salario 2500 "Pago de nómina"
   cash out comida 15.50 "Almuerzo de trabajo"
 

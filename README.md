@@ -58,7 +58,14 @@ go install ./cmd/cash
 Set up the storage directory structure in `~/.cashflow/`:
 
 ```bash
+# Offline-only local setup:
 cash init
+
+# Automatic multi-device sync setup (detects or creates a private 'cashflow-data' repo on GitHub via gh):
+cash init --auto
+
+# Or manually link an existing remote Git repository:
+cash init https://github.com/username/cashflow-data.git
 ```
 
 ### 2. Record Transactions
@@ -98,9 +105,13 @@ cash tui
 
 ### 5. Multi-Device Git Sync
 
-Sync your entries with a remote Git repository:
+Sync your immutable transaction files with your private Git repository:
 
 ```bash
+# Link your private storage repository automatically:
+cash init --auto
+
+# Synchronize local ledger with remote Git repository:
 cash sync
 ```
 

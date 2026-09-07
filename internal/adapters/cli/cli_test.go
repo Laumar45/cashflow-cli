@@ -7,11 +7,29 @@ import (
 	"testing"
 	"time"
 
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+
 	"cashflow/internal/adapters/cli"
 	"cashflow/internal/domain"
 )
 
+func resetAllFlags(cmd *cobra.Command) {
+	cmd.Flags().VisitAll(func(f *pflag.Flag) {
+		_ = f.Value.Set(f.DefValue)
+		f.Changed = false
+	})
+	cmd.PersistentFlags().VisitAll(func(f *pflag.Flag) {
+		_ = f.Value.Set(f.DefValue)
+		f.Changed = false
+	})
+	for _, sub := range cmd.Commands() {
+		resetAllFlags(sub)
+	}
+}
+
 func executeCommand(args ...string) (string, error) {
+	resetAllFlags(cli.RootCmd)
 	buf := new(bytes.Buffer)
 	cli.RootCmd.SetOut(buf)
 	cli.RootCmd.SetErr(buf)
@@ -115,3 +133,37 @@ func TestRootCmdHelpExamples(t *testing.T) {
 		t.Errorf("expected examples to show 'cash in' and 'cash out', got:\n%s", out)
 	}
 }
+
+func TestInitCmdHelp(t *testing.T) {
+	out, err := executeCommand("init", "--help")
+	if err != nil {
+		t.Fatalf("expected 'cash init --help' to succeed, got error: %v", err)
+	}
+
+	if !strings.Contains(out, "--auto") {
+		t.Errorf("expected init help to contain '--auto', got:\n%s", out)
+	}
+
+	if !strings.Contains(out, "cashflow-data") {
+		t.Errorf("expected init help to mention 'cashflow-data', got:\n%s", out)
+	}
+
+	if !strings.Contains(out, "Examples:") {
+		t.Errorf("expected init help to contain 'Examples:', got:\n%s", out)
+	}
+}
+
+func TestInitCmdConflict(t *testing.T) {
+	tempDir := t.TempDir()
+	cli.ResetCustomService()
+
+	_, err := executeCommand("init", "https://github.com/test/repo.git", "--auto", "--dir", tempDir)
+	if err == nil {
+		t.Fatalf("expected conflict error when combining --auto with manual URL, got nil")
+	}
+
+	if !strings.Contains(err.Error(), "no puedes combinar --auto con una URL manual") {
+		t.Errorf("unexpected error message: %v", err)
+	}
+}
+

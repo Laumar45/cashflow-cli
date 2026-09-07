@@ -126,7 +126,12 @@ func (s *GitService) Sync(ctx context.Context) error {
 
 	_, stderr, err = s.run(ctx, "pull", "--rebase", s.remote, branch)
 	if err != nil {
-		return s.classifyGitError(stderr, err)
+		lowerErr := strings.ToLower(stderr)
+		// If remote repository is brand new and has no commits yet, git pull fails with "couldn't find remote ref".
+		// This is expected on initial sync, so we proceed directly to push.
+		if !strings.Contains(lowerErr, "couldn't find remote ref") {
+			return s.classifyGitError(stderr, err)
+		}
 	}
 
 	// Step 3: Push to remote
@@ -134,7 +139,7 @@ func (s *GitService) Sync(ctx context.Context) error {
 		fmt.Fprintln(s.stepLogger, "[3/3] Enviando datos al repositorio remoto (push)...")
 	}
 
-	_, stderr, err = s.run(ctx, "push", s.remote, branch)
+	_, stderr, err = s.run(ctx, "push", "-u", s.remote, branch)
 	if err != nil {
 		return s.classifyGitError(stderr, err)
 	}
