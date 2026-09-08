@@ -44,8 +44,8 @@ func renderHeader(currentMonth time.Time, isCompact bool, width int) string {
 		logoLines[i] = strings.TrimRight(line, " \t")
 	}
 	cleanLogo = strings.Join(logoLines, "\n")
-	if isCompact || width < 80 {
-		cleanLogo = "  $$$\n $   $\n  $$$"
+	if isCompact {
+		cleanLogo = "  $$$\n $   $\n $    \n $   $\n  $$$"
 	}
 	if cleanLogo == "" {
 		cleanLogo = "  $$$   C A S H F L O W\n $   $  ---------------\n  $$$   T U I"
