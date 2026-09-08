@@ -123,7 +123,7 @@ func (m Model) View() string {
 		return "Terminal demasiado pequeña para renderizar CashFlow TUI.\n"
 	}
 
-	header := renderHeader(m.currentMonth, m.isCompact)
+	header := renderHeader(m.currentMonth, m.isCompact, m.width)
 	cards := renderCards(m.summary, m.isCompact, m.width)
 
 	// Available table rows estimation
@@ -141,7 +141,7 @@ func (m Model) View() string {
 	}
 
 	var statusLine string
-	if m.isCompact {
+	if m.isCompact || m.width < MediumBreakpoint {
 		statusLine = fmt.Sprintf("Fila %d/%d  •  ↻ %s (sin sync: %d)",
 			currRow, totalTxs, m.syncInfo.LastSyncRelative, m.syncInfo.UnsyncedCount)
 	} else {
@@ -149,14 +149,14 @@ func (m Model) View() string {
 			currRow, totalTxs, m.syncInfo.LastSyncRelative, m.syncInfo.UnsyncedCount)
 	}
 	statusStyle := StyleFooter
-	if m.isCompact {
+	if m.isCompact || m.width < MediumBreakpoint {
 		statusStyle = statusStyle.Copy().Width(m.width)
 	}
 	styledStatus := statusStyle.Render(statusLine)
 
 	// Footer Keybindings
 	var helpBar string
-	if m.isCompact {
+	if m.isCompact || m.width < MediumBreakpoint {
 		helpBar = "[h/l] Mes  •  [j/k] Nav  •  [t] Hoy  •  [q] Salir"
 	} else {
 		helpBar = "[←/→ h/l] Cambiar Mes  •  [↑/↓ j/k] Navegar Filas  •  [t] Hoy  •  [q] Salir"

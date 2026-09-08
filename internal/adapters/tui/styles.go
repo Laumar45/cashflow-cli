@@ -3,7 +3,8 @@ package tui
 import "github.com/charmbracelet/lipgloss"
 
 const (
-	CompactBreakpoint = 100
+	CompactBreakpoint = 50
+	MediumBreakpoint  = 100
 	MinTerminalWidth  = 30
 	MinTerminalHeight = 10
 )
@@ -18,56 +19,56 @@ var (
 	ColorBgSelect  = lipgloss.Color("#2E3440")
 
 	StyleTitle = lipgloss.NewStyle().
-		Bold(true).
-		Foreground(ColorPrimary)
+			Bold(true).
+			Foreground(ColorPrimary)
 
 	StyleSubtitle = lipgloss.NewStyle().
-		Foreground(ColorMuted)
+			Foreground(ColorMuted)
 
 	StyleMonthSelector = lipgloss.NewStyle().
-		Bold(true).
-		Foreground(ColorHighlight)
+				Bold(true).
+				Foreground(ColorHighlight)
 
 	StyleCardBase = lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		Padding(0, 1).
-		MarginRight(1)
+			Border(lipgloss.RoundedBorder()).
+			Padding(0, 1).
+			MarginRight(1)
 
 	StyleIncomeCard = StyleCardBase.Copy().
-		BorderForeground(ColorSuccess)
+			BorderForeground(ColorSuccess)
 
 	StyleExpenseCard = StyleCardBase.Copy().
-		BorderForeground(ColorDanger)
+				BorderForeground(ColorDanger)
 
 	StyleNetCardPositive = StyleCardBase.Copy().
-		BorderForeground(ColorSuccess)
+				BorderForeground(ColorSuccess)
 
 	StyleNetCardNegative = StyleCardBase.Copy().
-		BorderForeground(ColorDanger)
+				BorderForeground(ColorDanger)
 
 	StyleTopCatCard = StyleCardBase.Copy().
-		BorderForeground(ColorHighlight)
+			BorderForeground(ColorHighlight)
 
 	StyleTableHeader = lipgloss.NewStyle().
-		Bold(true).
-		Foreground(ColorPrimary)
+				Bold(true).
+				Foreground(ColorPrimary)
 
 	StyleSelectedRow = lipgloss.NewStyle().
-		Bold(true).
-		Background(ColorBgSelect).
-		Foreground(lipgloss.Color("#ECEFF4"))
+				Bold(true).
+				Background(ColorBgSelect).
+				Foreground(lipgloss.Color("#ECEFF4"))
 
 	StyleNormalRow = lipgloss.NewStyle().
-		Foreground(ColorNeutral)
+			Foreground(ColorNeutral)
 
 	StyleIncomeText = lipgloss.NewStyle().
-		Foreground(ColorSuccess).
-		Bold(true)
+			Foreground(ColorSuccess).
+			Bold(true)
 
 	StyleExpenseText = lipgloss.NewStyle().
-		Foreground(ColorDanger).
-		Bold(true)
+				Foreground(ColorDanger).
+				Bold(true)
 
 	StyleFooter = lipgloss.NewStyle().
-		Foreground(ColorMuted)
+			Foreground(ColorMuted)
 )

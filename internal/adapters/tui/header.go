@@ -28,7 +28,7 @@ var spanishMonths = map[time.Month]string{
 }
 
 // renderHeader renders the ASCII logo alongside the dynamic month navigation selector.
-func renderHeader(currentMonth time.Time, isCompact bool) string {
+func renderHeader(currentMonth time.Time, isCompact bool, width int) string {
 	monthName := currentMonth.Format("January")
 	if name, ok := spanishMonths[currentMonth.Month()]; ok {
 		monthName = name
@@ -44,7 +44,7 @@ func renderHeader(currentMonth time.Time, isCompact bool) string {
 		logoLines[i] = strings.TrimRight(line, " \t")
 	}
 	cleanLogo = strings.Join(logoLines, "\n")
-	if isCompact {
+	if isCompact || width < 80 {
 		cleanLogo = "  $$$\n $   $\n  $$$"
 	}
 	if cleanLogo == "" {
@@ -67,6 +67,14 @@ func renderHeader(currentMonth time.Time, isCompact bool) string {
 		"",
 		monthBox,
 	)
+
+	if width < MediumBreakpoint {
+		return lipgloss.JoinVertical(lipgloss.Left,
+			styledLogo,
+			"",
+			titleBlock,
+		)
+	}
 
 	return lipgloss.JoinHorizontal(lipgloss.Center,
 		styledLogo,

@@ -36,7 +36,7 @@ func renderTable(transactions []domain.Transaction, cursorIndex int, isCompact b
 
 	var b strings.Builder
 
-	if isCompact {
+	if isCompact || width < MediumBreakpoint {
 		// Compact columns (<80 cols): FECHA | TIPO | MONTO
 		dateWidth, typeWidth, separator := 6, 10, "  "
 		if width < 48 {

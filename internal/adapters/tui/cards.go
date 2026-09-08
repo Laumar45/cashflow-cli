@@ -55,7 +55,7 @@ func renderCards(summary *domain.MonthlySummary, isCompact bool, width int) stri
 	netPositiveCardStyle := StyleNetCardPositive
 	netNegativeCardStyle := StyleNetCardNegative
 	topCatCardStyle := StyleTopCatCard
-	if isCompact && width >= 48 {
+	if width < MediumBreakpoint && width >= 48 {
 		cardWidth := (width - 6) / 2
 		incomeCardStyle = incomeCardStyle.Copy().Width(cardWidth)
 		expenseCardStyle = expenseCardStyle.Copy().Width(cardWidth)
@@ -88,7 +88,7 @@ func renderCards(summary *domain.MonthlySummary, isCompact bool, width int) stri
 	topCatContent := lipgloss.NewStyle().Foreground(ColorHighlight).Render(topCat)
 	cardTopCat := topCatCardStyle.Render(fmt.Sprintf("%s\n%s", topCatTitle, topCatContent))
 
-	if isCompact {
+	if width < MediumBreakpoint {
 		// Use two columns when the terminal can fit two cards without wrapping.
 		if width >= 48 {
 			rowOne := lipgloss.JoinHorizontal(lipgloss.Top, cardIncome, cardExpense)
