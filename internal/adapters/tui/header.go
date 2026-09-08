@@ -68,7 +68,9 @@ func renderHeader(currentMonth time.Time, isCompact bool, width int) string {
 		monthBox,
 	)
 
-	if width < MediumBreakpoint {
+	logoWidth := lipgloss.Width(styledLogo)
+	titleWidth := lipgloss.Width(titleBlock)
+	if width < logoWidth+2+titleWidth {
 		return lipgloss.JoinVertical(lipgloss.Left,
 			styledLogo,
 			"",
@@ -78,7 +80,7 @@ func renderHeader(currentMonth time.Time, isCompact bool, width int) string {
 
 	return lipgloss.JoinHorizontal(lipgloss.Center,
 		styledLogo,
-		"    ",
+		"  ",
 		titleBlock,
 	)
 }
