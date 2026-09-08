@@ -38,7 +38,24 @@ $targetExe = Join-Path $installDir "cash.exe"
 $sourceExe = Join-Path $rootDir "cash.exe"
 
 Write-Host "[2/3] Instalando en: $installDir..." -ForegroundColor Yellow
-Copy-Item -Path $sourceExe -Destination $targetExe -Force
+$normalizedTarget = [IO.Path]::GetFullPath($targetExe)
+$runningCash = Get-CimInstance Win32_Process -Filter "Name = 'cash.exe'" |
+    Where-Object {
+        $_.ExecutablePath -and
+        ([IO.Path]::GetFullPath($_.ExecutablePath) -ieq $normalizedTarget)
+    }
+
+foreach ($process in $runningCash) {
+    Write-Host "   Cerrando cash.exe en uso (PID $($process.ProcessId))..." -ForegroundColor Yellow
+    Stop-Process -Id $process.ProcessId -Force -ErrorAction Stop
+    Wait-Process -Id $process.ProcessId -Timeout 5 -ErrorAction SilentlyContinue
+}
+
+try {
+    Copy-Item -Path $sourceExe -Destination $targetExe -Force -ErrorAction Stop
+} catch {
+    throw "No se pudo reemplazar $targetExe. Cierra cualquier instancia de cash.exe y vuelve a ejecutar el instalador. Detalle: $($_.Exception.Message)"
+}
 
 # 3. Ensure installDir is in user PATH
 Write-Host "[3/3] Configurando variable de entorno PATH..." -ForegroundColor Yellow
