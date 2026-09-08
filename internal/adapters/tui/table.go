@@ -10,7 +10,7 @@ import (
 )
 
 // renderTable formats the transactions list with row cursor and responsive columns.
-func renderTable(transactions []domain.Transaction, cursorIndex int, isCompact bool, maxRows int) string {
+func renderTable(transactions []domain.Transaction, cursorIndex int, isCompact bool, maxRows int, width int) string {
 	if len(transactions) == 0 {
 		emptyMsg := lipgloss.NewStyle().
 			Foreground(ColorMuted).
@@ -38,14 +38,18 @@ func renderTable(transactions []domain.Transaction, cursorIndex int, isCompact b
 
 	if isCompact {
 		// Compact columns (<80 cols): FECHA | TIPO | MONTO
-		header := fmt.Sprintf("%-6s  %-10s  %12s", "FECHA", "TIPO", "MONTO")
+		dateWidth, typeWidth, separator := 6, 10, "  "
+		if width < 48 {
+			dateWidth, typeWidth, separator = 5, 9, " "
+		}
+		header := fmt.Sprintf("%-*s%s%-*s%s%12s", dateWidth, "FECHA", separator, typeWidth, "TIPO", separator, "MONTO")
 		b.WriteString(StyleTableHeader.Render(header))
 		b.WriteString("\n")
 
 		for i := startIdx; i < endIdx; i++ {
 			tx := transactions[i]
 			dateStr := tx.Timestamp.Format("01-02")
-			
+
 			var typeStr, amountStr string
 			if tx.Type == domain.TypeIncome {
 				typeStr = "▲ INCOME"
@@ -55,7 +59,7 @@ func renderTable(transactions []domain.Transaction, cursorIndex int, isCompact b
 				amountStr = "-" + tx.Amount.Format()
 			}
 
-			rowText := fmt.Sprintf("%-6s  %-10s  %12s", dateStr, typeStr, amountStr)
+			rowText := fmt.Sprintf("%-*s%s%-*s%s%12s", dateWidth, dateStr, separator, typeWidth, typeStr, separator, amountStr)
 
 			if i == cursorIndex {
 				b.WriteString(StyleSelectedRow.Render(rowText))

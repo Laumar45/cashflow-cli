@@ -10,7 +10,7 @@ import (
 )
 
 // renderCards generates the 4 metric cards adhering to symbolic accessibility (DEC-TUI-05).
-func renderCards(summary *domain.MonthlySummary, isCompact bool) string {
+func renderCards(summary *domain.MonthlySummary, isCompact bool, width int) string {
 	incomeVal := "+USD 0.00"
 	expenseVal := "-USD 0.00"
 	balanceVal := "+USD 0.00"
@@ -76,7 +76,13 @@ func renderCards(summary *domain.MonthlySummary, isCompact bool) string {
 	cardTopCat := StyleTopCatCard.Render(fmt.Sprintf("%s\n%s", topCatTitle, topCatContent))
 
 	if isCompact {
-		// Stacked layout for screens < 80 cols
+		// Use two columns when the terminal can fit two cards without wrapping.
+		if width >= 48 {
+			rowOne := lipgloss.JoinHorizontal(lipgloss.Top, cardIncome, cardExpense)
+			rowTwo := lipgloss.JoinHorizontal(lipgloss.Top, cardNet, cardTopCat)
+			return lipgloss.JoinVertical(lipgloss.Left, rowOne, rowTwo)
+		}
+
 		return lipgloss.JoinVertical(lipgloss.Left,
 			cardIncome,
 			cardExpense,

@@ -62,6 +62,8 @@ if [ -n "$ACTIVE_BIN" ] && [ "$ACTIVE_BIN" != "$TARGET_DIR/cash" ]; then
     echo -e "${YELLOW}   Ruta activa: $ACTIVE_BIN${NC}"
     echo -e "${YELLOW}   Ruta recién instalada: $TARGET_DIR/cash${NC}"
     echo -e "${RED}   Elimina el binario antiguo para evitar ejecutar una versión obsoleta.${NC}"
+else
+    echo -e "${GREEN}✔ Binario activo: $ACTIVE_BIN${NC}"
 fi
 
 echo ""

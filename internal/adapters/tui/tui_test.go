@@ -7,6 +7,7 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 
 	"cashflow/internal/adapters/tui"
 	"cashflow/internal/domain"
@@ -74,8 +75,7 @@ func TestTUIModelRenderingAndAccessibility(t *testing.T) {
 		UnsyncedCount:    1,
 	}
 
-	dummyLogo := "  $$$  CASHFLOW\n  $$$  TUI"
-	model := tui.NewModel(svc, sept, syncInfo, dummyLogo)
+	model := tui.NewModel(svc, sept, syncInfo)
 
 	viewOutput := model.View()
 
@@ -114,7 +114,7 @@ func TestTUIMonthNavigation(t *testing.T) {
 	svc := setupTestService()
 	sept := time.Date(2026, time.September, 1, 0, 0, 0, 0, time.UTC)
 
-	model := tui.NewModel(svc, sept, tui.SyncStatusInfo{}, "")
+	model := tui.NewModel(svc, sept, tui.SyncStatusInfo{})
 
 	// Press left arrow to navigate to August
 	start := time.Now()
@@ -144,11 +144,11 @@ func TestTUIResponsivenessUnder80Columns(t *testing.T) {
 	svc := setupTestService()
 	sept := time.Date(2026, time.September, 1, 0, 0, 0, 0, time.UTC)
 
-	model := tui.NewModel(svc, sept, tui.SyncStatusInfo{LastSyncRelative: "hace 10m", UnsyncedCount: 0}, "")
+	model := tui.NewModel(svc, sept, tui.SyncStatusInfo{LastSyncRelative: "hace 10m", UnsyncedCount: 0})
 
-	// Resize to 60 columns (compact mode)
+	// Resize to 80 columns: common mobile terminal width, still compact mode.
 	updatedModel, _ := model.Update(tea.WindowSizeMsg{
-		Width:  60,
+		Width:  80,
 		Height: 25,
 	})
 
@@ -163,12 +163,31 @@ func TestTUIResponsivenessUnder80Columns(t *testing.T) {
 	if strings.Contains(viewCompact, "DESCRIPCIÓN") {
 		t.Errorf("expected compact table to hide DESCRIPCIÓN column, but it was present")
 	}
+	cardRowFound := false
+	for _, line := range strings.Split(viewCompact, "\n") {
+		if strings.Contains(line, "INGRESOS") && strings.Contains(line, "GASTOS") {
+			cardRowFound = true
+			break
+		}
+	}
+	if !cardRowFound {
+		t.Errorf("expected compact cards to use two columns at width 80")
+	}
+
+	for _, width := range []int{30, 60, 80} {
+		resizedModel, _ := model.Update(tea.WindowSizeMsg{Width: width, Height: 25})
+		for _, line := range strings.Split(resizedModel.View(), "\n") {
+			if lipgloss.Width(line) > width {
+				t.Errorf("expected compact view line to fit width %d, got %d: %q", width, lipgloss.Width(line), line)
+			}
+		}
+	}
 }
 
 func TestTUIQuitCommands(t *testing.T) {
 	// Verifies Done-when condition 4: q/esc emits tea.Quit
 	svc := setupTestService()
-	model := tui.NewModel(svc, time.Now(), tui.SyncStatusInfo{}, "")
+	model := tui.NewModel(svc, time.Now(), tui.SyncStatusInfo{})
 
 	for _, key := range []string{"q", "esc", "ctrl+c"} {
 		var keyMsg tea.KeyMsg

@@ -3,6 +3,7 @@ package tui
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -23,7 +24,6 @@ type Model struct {
 	height       int
 	isCompact    bool
 	syncInfo     SyncStatusInfo
-	logoContent  string
 	err          error
 }
 
@@ -32,7 +32,6 @@ func NewModel(
 	svc ports.TransactionUseCases,
 	initialMonth time.Time,
 	syncInfo SyncStatusInfo,
-	logoContent string,
 ) Model {
 	if initialMonth.IsZero() {
 		initialMonth = time.Now().UTC()
@@ -42,7 +41,6 @@ func NewModel(
 		svc:          svc,
 		currentMonth: initialMonth,
 		syncInfo:     syncInfo,
-		logoContent:  logoContent,
 		width:        100, // Default width until WindowSizeMsg arrives
 		height:       30,
 		isCompact:    false,
@@ -125,15 +123,15 @@ func (m Model) View() string {
 		return "Terminal demasiado pequeña para renderizar CashFlow TUI.\n"
 	}
 
-	header := renderHeader(m.logoContent, m.currentMonth, m.isCompact)
-	cards := renderCards(m.summary, m.isCompact)
+	header := renderHeader(m.currentMonth, m.isCompact)
+	cards := renderCards(m.summary, m.isCompact, m.width)
 
 	// Available table rows estimation
 	tableRows := 10
 	if m.height > 25 {
 		tableRows = m.height - 18
 	}
-	table := renderTable(m.transactions, m.cursorIndex, m.isCompact, tableRows)
+	table := renderTable(m.transactions, m.cursorIndex, m.isCompact, tableRows, m.width)
 
 	// Status Line (Overflow + Local Sync status)
 	totalTxs := len(m.transactions)
@@ -150,7 +148,11 @@ func (m Model) View() string {
 		statusLine = fmt.Sprintf("Fila %d/%d  •  Última sync: %s  •  Cambios sin sync: %d",
 			currRow, totalTxs, m.syncInfo.LastSyncRelative, m.syncInfo.UnsyncedCount)
 	}
-	styledStatus := StyleFooter.Render(statusLine)
+	statusStyle := StyleFooter
+	if m.isCompact {
+		statusStyle = statusStyle.Copy().Width(m.width)
+	}
+	styledStatus := statusStyle.Render(statusLine)
 
 	// Footer Keybindings
 	var helpBar string
@@ -159,9 +161,13 @@ func (m Model) View() string {
 	} else {
 		helpBar = "[←/→ h/l] Cambiar Mes  •  [↑/↓ j/k] Navegar Filas  •  [t] Hoy  •  [q] Salir"
 	}
-	styledHelp := StyleFooter.Render(helpBar)
+	helpStyle := StyleFooter
+	if m.isCompact {
+		helpStyle = helpStyle.Copy().Width(m.width)
+	}
+	styledHelp := helpStyle.Render(helpBar)
 
-	divider := StyleFooter.Render(lipgloss.NewStyle().Width(m.width).Render("--------------------------------------------------------------------------------"))
+	divider := StyleFooter.Render(strings.Repeat("-", m.width))
 
 	return lipgloss.JoinVertical(lipgloss.Left,
 		header,

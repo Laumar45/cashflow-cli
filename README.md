@@ -70,7 +70,7 @@ This runs `git pull --rebase --autostash` and automatically recompiles and repla
 
 ### 🤖 AI Agent Instructions (Antigravity, Cursor, Copilot, Claude)
 
-When requested to **"trae los cambios y actualiza"** (or "pull changes and update"):
+When requested to **"actualiza"** (or "pull changes and update"):
 1. Execute `.\update.ps1` (Windows PowerShell) or `./update.sh` (Linux / macOS / Termux) from the repository root.
 2. Verify that the active executable matches the installed path:
    - On Windows: `Get-Command cash | Select-Object Name, Source` (should resolve to `%LOCALAPPDATA%\cashflow\bin\cash.exe`).

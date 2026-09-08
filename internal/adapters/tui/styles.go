@@ -3,7 +3,7 @@ package tui
 import "github.com/charmbracelet/lipgloss"
 
 const (
-	CompactBreakpoint = 80
+	CompactBreakpoint = 100
 	MinTerminalWidth  = 30
 	MinTerminalHeight = 10
 )

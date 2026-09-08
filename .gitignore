@@ -10,3 +10,4 @@ bin/
 # Test and local data
 test_data/
 .cashflow/
+.codegraph/
