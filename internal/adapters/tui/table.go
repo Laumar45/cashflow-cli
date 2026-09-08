@@ -42,7 +42,11 @@ func renderTable(transactions []domain.Transaction, cursorIndex int, isCompact b
 		if width < 48 {
 			dateWidth, typeWidth, separator = 5, 9, " "
 		}
-		header := fmt.Sprintf("%-*s%s%-*s%s%12s", dateWidth, "FECHA", separator, typeWidth, "TIPO", separator, "MONTO")
+		amountWidth := width - dateWidth - typeWidth - (len(separator) * 2)
+		if amountWidth < 12 {
+			amountWidth = 12
+		}
+		header := fmt.Sprintf("%-*s%s%-*s%s%*s", dateWidth, "FECHA", separator, typeWidth, "TIPO", separator, amountWidth, "MONTO")
 		b.WriteString(StyleTableHeader.Render(header))
 		b.WriteString("\n")
 
@@ -59,7 +63,7 @@ func renderTable(transactions []domain.Transaction, cursorIndex int, isCompact b
 				amountStr = "-" + tx.Amount.Format()
 			}
 
-			rowText := fmt.Sprintf("%-*s%s%-*s%s%12s", dateWidth, dateStr, separator, typeWidth, typeStr, separator, amountStr)
+			rowText := fmt.Sprintf("%-*s%s%-*s%s%*s", dateWidth, dateStr, separator, typeWidth, typeStr, separator, amountWidth, amountStr)
 
 			if i == cursorIndex {
 				b.WriteString(StyleSelectedRow.Render(rowText))

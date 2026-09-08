@@ -50,12 +50,25 @@ func renderCards(summary *domain.MonthlySummary, isCompact bool, width int) stri
 	// 1. Income Card
 	incomeTitle := lipgloss.NewStyle().Foreground(ColorSuccess).Bold(true).Render("INGRESOS  ▲")
 	incomeContent := StyleIncomeText.Render(incomeVal)
-	cardIncome := StyleIncomeCard.Render(fmt.Sprintf("%s\n%s", incomeTitle, incomeContent))
+	incomeCardStyle := StyleIncomeCard
+	expenseCardStyle := StyleExpenseCard
+	netPositiveCardStyle := StyleNetCardPositive
+	netNegativeCardStyle := StyleNetCardNegative
+	topCatCardStyle := StyleTopCatCard
+	if isCompact && width >= 48 {
+		cardWidth := (width - 6) / 2
+		incomeCardStyle = incomeCardStyle.Copy().Width(cardWidth)
+		expenseCardStyle = expenseCardStyle.Copy().Width(cardWidth)
+		netPositiveCardStyle = netPositiveCardStyle.Copy().Width(cardWidth)
+		netNegativeCardStyle = netNegativeCardStyle.Copy().Width(cardWidth)
+		topCatCardStyle = topCatCardStyle.Copy().Width(cardWidth)
+	}
+	cardIncome := incomeCardStyle.Render(fmt.Sprintf("%s\n%s", incomeTitle, incomeContent))
 
 	// 2. Expense Card
 	expenseTitle := lipgloss.NewStyle().Foreground(ColorDanger).Bold(true).Render("GASTOS    ▼")
 	expenseContent := StyleExpenseText.Render(expenseVal)
-	cardExpense := StyleExpenseCard.Render(fmt.Sprintf("%s\n%s", expenseTitle, expenseContent))
+	cardExpense := expenseCardStyle.Render(fmt.Sprintf("%s\n%s", expenseTitle, expenseContent))
 
 	// 3. Balance Card
 	var netTitle, netContent string
@@ -63,17 +76,17 @@ func renderCards(summary *domain.MonthlySummary, isCompact bool, width int) stri
 	if isPositiveBalance {
 		netTitle = lipgloss.NewStyle().Foreground(ColorSuccess).Bold(true).Render("BALANCE   ▲")
 		netContent = StyleIncomeText.Render(balanceVal)
-		cardNet = StyleNetCardPositive.Render(fmt.Sprintf("%s\n%s", netTitle, netContent))
+		cardNet = netPositiveCardStyle.Render(fmt.Sprintf("%s\n%s", netTitle, netContent))
 	} else {
 		netTitle = lipgloss.NewStyle().Foreground(ColorDanger).Bold(true).Render("BALANCE   ▼")
 		netContent = StyleExpenseText.Render(balanceVal)
-		cardNet = StyleNetCardNegative.Render(fmt.Sprintf("%s\n%s", netTitle, netContent))
+		cardNet = netNegativeCardStyle.Render(fmt.Sprintf("%s\n%s", netTitle, netContent))
 	}
 
 	// 4. Top Category Card
 	topCatTitle := lipgloss.NewStyle().Foreground(ColorHighlight).Bold(true).Render("TOP CAT.  ★")
 	topCatContent := lipgloss.NewStyle().Foreground(ColorHighlight).Render(topCat)
-	cardTopCat := StyleTopCatCard.Render(fmt.Sprintf("%s\n%s", topCatTitle, topCatContent))
+	cardTopCat := topCatCardStyle.Render(fmt.Sprintf("%s\n%s", topCatTitle, topCatContent))
 
 	if isCompact {
 		// Use two columns when the terminal can fit two cards without wrapping.
